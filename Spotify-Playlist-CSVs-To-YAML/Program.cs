@@ -6,7 +6,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             string rootDirectory = @"C:\Users\Emanu\Downloads\playlists";
 
@@ -16,7 +16,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
                 return;
             }
 
-            var playlistData = BuildPlaylistData(rootDirectory);
+            Dictionary<string, List<Song>> playlistData = BuildPlaylistData(rootDirectory);
 
             if (playlistData.Count == 0)
             {
@@ -24,7 +24,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
                 return;
             }
 
-            var serializer = new SerializerBuilder()
+            ISerializer serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
 
@@ -36,26 +36,26 @@ namespace Spotify_Playlist_CSVs_To_YAML
             Console.WriteLine($"YAML file successfully generated at: {outputYamlPath}");
         }
 
-        static Dictionary<string, List<Song>> BuildPlaylistData(string rootDirectory)
+        private static Dictionary<string, List<Song>> BuildPlaylistData(string rootDirectory)
         {
-            var playlistData = new Dictionary<string, List<Song>>();
+            Dictionary<string, List<Song>> playlistData = [];
 
-            foreach (var filePath in Directory.GetFiles(rootDirectory, "*.csv"))
+            foreach (string filePath in Directory.GetFiles(rootDirectory, "*.csv"))
             {
                 string fileName = Path.GetFileNameWithoutExtension(filePath);
                 string playlistName = ExtractPlaylistName(fileName);
-                var songs = new List<Song>();
+                List<Song> songs = [];
 
-                using (TextFieldParser parser = new TextFieldParser(filePath))
+                using (TextFieldParser parser = new(filePath))
                 {
-                    parser.SetDelimiters(new string[] { "," });
+                    parser.SetDelimiters([","]);
                     parser.HasFieldsEnclosedInQuotes = true;
 
                     parser.ReadFields();
 
                     while (!parser.EndOfData)
                     {
-                        var fields = parser.ReadFields();
+                        string[]? fields = parser.ReadFields();
 
                         if (fields.Length < 4)
                         {
@@ -85,7 +85,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
                     }
                 }
 
-                if (songs.Any())
+                if (songs.Count != 0)
                 {
                     playlistData[playlistName] = songs;
                 }
@@ -98,14 +98,14 @@ namespace Spotify_Playlist_CSVs_To_YAML
             return playlistData;
         }
 
-        static string ExtractPlaylistName(string fileName)
+        private static string ExtractPlaylistName(string fileName)
         {
-            var parts = fileName.Split(new[] { "kbots_", "_mix_2024" }, StringSplitOptions.None);
+            string[] parts = fileName.Split(new[] { "kbots_", "_mix_2024" }, StringSplitOptions.None);
             return parts.Length > 1 ? parts[1].Replace('_', ' ').Trim() : "Unknown Playlist";
         }
     }
 
-    class Song
+    internal class Song
     {
         public List<string> Artists { get; set; }
         public string Title { get; set; }
