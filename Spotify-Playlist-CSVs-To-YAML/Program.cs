@@ -51,7 +51,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
                     parser.SetDelimiters(new string[] { "," });
                     parser.HasFieldsEnclosedInQuotes = true;
 
-                    parser.ReadFields(); // Skip header
+                    parser.ReadFields();
 
                     while (!parser.EndOfData)
                     {
@@ -63,13 +63,18 @@ namespace Spotify_Playlist_CSVs_To_YAML
                             continue;
                         }
 
-                        string title = fields[1].Trim();
-                        string artists = fields[3].Trim();
+                        string title = fields[1].Trim().Trim('"');
+                        string artists = fields[3].Trim().Trim('"');
 
                         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(artists))
                         {
                             Console.WriteLine($"Skipping row with missing title or artists in file: {fileName}.csv");
                             continue;
+                        }
+
+                        if (int.TryParse(title, out _))
+                        {
+                            title = $"\"{title}\"";
                         }
 
                         songs.Add(new Song
