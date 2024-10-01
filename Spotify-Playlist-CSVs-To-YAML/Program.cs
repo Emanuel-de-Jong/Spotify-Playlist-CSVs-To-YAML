@@ -8,8 +8,20 @@ namespace Spotify_Playlist_CSVs_To_YAML
     {
         private static void Main(string[] args)
         {
-            string rootDirectory = @"C:\Users\Emanu\Downloads\playlists";
+            string[] paths =
+            {
+                @"C:\Users\Emanu\Downloads\liked",
+                @"C:\Users\Emanu\Downloads\playlists"
+            };
 
+            foreach (string path in paths)
+            {
+                CreateYAML(path);
+            }
+        }
+
+        private static void CreateYAML(string rootDirectory)
+        {
             if (!Directory.Exists(rootDirectory))
             {
                 Console.WriteLine($"Error: Directory not found: {rootDirectory}");
@@ -30,7 +42,9 @@ namespace Spotify_Playlist_CSVs_To_YAML
 
             string yaml = serializer.Serialize(playlistData);
 
-            string outputYamlPath = Path.Combine(Directory.GetCurrentDirectory(), "playlists.yaml");
+            string yamlFileName = Path.GetFileName(rootDirectory);
+
+            string outputYamlPath = Path.Combine(Directory.GetCurrentDirectory(), $"{yamlFileName}.yaml");
             File.WriteAllText(outputYamlPath, yaml);
 
             Console.WriteLine($"YAML file successfully generated at: {outputYamlPath}");
@@ -74,7 +88,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
 
                         if (int.TryParse(title, out _))
                         {
-                            title = $"\"{title}\"";
+                            title = $"'{title}'";
                         }
 
                         songs.Add(new Song
@@ -101,7 +115,7 @@ namespace Spotify_Playlist_CSVs_To_YAML
         private static string ExtractPlaylistName(string fileName)
         {
             string[] parts = fileName.Split(new[] { "kbots_", "_mix_2024" }, StringSplitOptions.None);
-            return parts.Length > 1 ? parts[1].Replace('_', ' ').Trim() : "Unknown Playlist";
+            return parts.Length > 1 ? parts[1].Replace('_', ' ').Trim() : fileName;
         }
     }
 
